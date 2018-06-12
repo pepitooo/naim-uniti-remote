@@ -6,8 +6,6 @@ import sys
 
 import requests
 
-request_confirmation = True
-
 
 def get_current_value(url_pattern, ip_address, variable):
     r = requests.get(url_pattern.format(ip=ip_address))
@@ -30,7 +28,7 @@ def get_power_state(ip_address):
     return current_state == 'on'
 
 
-def volume_up(ip_address):
+def volume_up(ip_address, request_confirmation=False):
     current_volume = volume_get_current_value(ip_address)
     if current_volume is not None:
         requests.put('http://{ip}:15081/levels/room?volume={value}'.format(ip=ip_address, value=current_volume+1))
@@ -38,7 +36,7 @@ def volume_up(ip_address):
             print('Volume have been set to {value}'.format(value=volume_get_current_value(ip_address)))
 
 
-def volume_down(ip_address):
+def volume_down(ip_address, request_confirmation=False):
     current_volume = volume_get_current_value(ip_address)
     if current_volume is not None:
         # volume will not go under 0, no big deal if you send negative value
@@ -47,7 +45,7 @@ def volume_down(ip_address):
             print('Volume have been set to {value}'.format(value=volume_get_current_value(ip_address)))
 
 
-def mute_toggle(ip_address):
+def mute_toggle(ip_address, request_confirmation=False):
     mute = mute_get_current_value(ip_address)
     if mute is not None:
         requests.put('http://{ip}:15081/levels/room?mute={value}'.format(ip=ip_address, value=int(not(mute > 0))))
@@ -63,13 +61,13 @@ def display_power_status(ip_address):
         print('Your Naim Uniti device is Power Off')
 
 
-def power_on(ip_address):
+def power_on(ip_address, request_confirmation=False):
     requests.put('http://{ip}:15081/power?system={value}'.format(ip=ip_address, value='on'))
     if request_confirmation:
         display_power_status(ip_address)
 
 
-def power_off(ip_address):
+def power_off(ip_address, request_confirmation=False):
     requests.put('http://{ip}:15081/power?system={value}'.format(ip=ip_address, value='lona'))
     if request_confirmation:
         display_power_status(ip_address)
@@ -109,21 +107,22 @@ def parse_args(args):
                                  # 'play-next', 'play-previous'
                                  ],
                         help="simulate action on remote control")
+    parser.add_argument('-d', dest='request_confirmation', action="store_true")
     return parser.parse_args(args)
 
 
 def main(args):
     args_parsed = parse_args(args)
     if 'volume-up' == args_parsed.requested_action:
-        volume_up(args_parsed.ip_address)
+        volume_up(args_parsed.ip_address, args_parsed.request_confirmation)
     elif 'volume-down' == args_parsed.requested_action:
-        volume_down(args_parsed.ip_address)
+        volume_down(args_parsed.ip_address, args_parsed.request_confirmation)
     elif 'mute-toggle' == args_parsed.requested_action:
-        mute_toggle(args_parsed.ip_address)
+        mute_toggle(args_parsed.ip_address, args_parsed.request_confirmation)
     elif 'power-on'== args_parsed.requested_action:
-        power_on(args_parsed.ip_address)
+        power_on(args_parsed.ip_address, args_parsed.request_confirmation)
     elif 'power-off' == args_parsed.requested_action:
-        power_off(args_parsed.ip_address)
+        power_off(args_parsed.ip_address, args_parsed.request_confirmation)
 
 
 if __name__ == '__main__':
