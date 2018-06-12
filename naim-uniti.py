@@ -77,12 +77,21 @@ def power_off(ip_address):
 
 
 def check_ip_address(value):
-    try:
-        ipaddress.ip_address(value)
-    except ValueError:
-        raise argparse.ArgumentTypeError("{ip} does not appear to be an IPv4 or IPv6 address".format(ip=value))
-    return value
-
+    if sys.version_info >= (3, 3):
+        import ipaddress
+        try:
+            ipaddress.ip_address(value)
+            return value
+        except ValueError:
+            raise argparse.ArgumentTypeError("{ip} does not appear to be an IPv4 or IPv6 address".format(ip=value))
+    else:
+        import socket
+        try:
+            socket.inet_aton(value)
+            return value
+        except socket.error:
+            raise argparse.ArgumentTypeError("{ip} does not appear to be an IPv4 or IPv6 address".format(ip=value))
+        
 
 def parse_args(args):
     """
