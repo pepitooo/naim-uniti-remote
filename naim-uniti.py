@@ -91,7 +91,7 @@ def parse_args(args):
     """
     parser = argparse.ArgumentParser(description="For controlling NAIM Uniti device via command line")
     required_named = parser.add_argument_group('required arguments')
-    required_named.add_argument('--ip', dest='ip_address', help='Ip address of your Naim Unity device', required=True,
+    required_named.add_argument('--ip', dest='ip_address', help='ip address of your Naim Unity device', required=True,
                                 type=check_ip_address)
 
     parser.add_argument('requested_action', action="store",
