@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import argparse
-import ipaddress
 import json
 import sys
 
@@ -91,7 +90,7 @@ def check_ip_address(value):
             return value
         except socket.error:
             raise argparse.ArgumentTypeError("{ip} does not appear to be an IPv4 or IPv6 address".format(ip=value))
-        
+
 
 def parse_args(args):
     """
