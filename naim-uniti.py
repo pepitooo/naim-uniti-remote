@@ -28,19 +28,11 @@ def get_power_state(ip_address):
     return current_state == 'on'
 
 
-def volume_up(ip_address, request_confirmation=False):
-    current_volume = volume_get_current_value(ip_address)
-    if current_volume is not None:
-        requests.put('http://{ip}:15081/levels/room?volume={value}'.format(ip=ip_address, value=current_volume+1))
-        if request_confirmation:
-            print('Volume have been set to {value}'.format(value=volume_get_current_value(ip_address)))
-
-
-def volume_down(ip_address, request_confirmation=False):
+def volume_change(ip_address, increment, request_confirmation=False):
     current_volume = volume_get_current_value(ip_address)
     if current_volume is not None:
         # volume will not go under 0, no big deal if you send negative value
-        requests.put('http://{ip}:15081/levels/room?volume={value}'.format(ip=ip_address, value=current_volume-1))
+        requests.put('http://{ip}:15081/levels/room?volume={value}'.format(ip=ip_address, value=current_volume+increment))
         if request_confirmation:
             print('Volume have been set to {value}'.format(value=volume_get_current_value(ip_address)))
 
@@ -61,14 +53,8 @@ def display_power_status(ip_address):
         print('Your Naim Uniti device is Power Off')
 
 
-def power_on(ip_address, request_confirmation=False):
-    requests.put('http://{ip}:15081/power?system={value}'.format(ip=ip_address, value='on'))
-    if request_confirmation:
-        display_power_status(ip_address)
-
-
-def power_off(ip_address, request_confirmation=False):
-    requests.put('http://{ip}:15081/power?system={value}'.format(ip=ip_address, value='lona'))
+def power_action(ip_address, action, request_confirmation=False):
+    requests.put('http://{ip}:15081/power?system={action}'.format(ip=ip_address, action=action))
     if request_confirmation:
         display_power_status(ip_address)
 
@@ -116,22 +102,28 @@ def parse_args(args):
                                  'input-digital-2', 'input-digital-3', 'input-bluetooth', 'input-webradio'
                                  ],
                         help="simulate action on remote control")
-    parser.add_argument('-d', dest='request_confirmation', action="store_true")
+    parser.add_argument('-d', dest='request_confirmation', action="store_true",
+                        help='request a confirmation of the change, for volume, mute, and power change')
+    parser.add_argument('-v', dest='volume_increment', action="count",
+                        help='volume increment (default is 1) -vvv is increment by 3')
     return parser.parse_args(args)
 
 
 def main(args):
     args_parsed = parse_args(args)
+    print((args_parsed.volume_increment or 1) + 2)
     if 'volume-up' == args_parsed.requested_action:
-        volume_up(args_parsed.ip_address, args_parsed.request_confirmation)
+        increment = args_parsed.volume_increment or 1
+        volume_change(args_parsed.ip_address, increment, args_parsed.request_confirmation)
     elif 'volume-down' == args_parsed.requested_action:
-        volume_down(args_parsed.ip_address, args_parsed.request_confirmation)
+        increment = args_parsed.volume_increment or 1
+        volume_change(args_parsed.ip_address, -increment, args_parsed.request_confirmation)
     elif 'mute-toggle' == args_parsed.requested_action:
         mute_toggle(args_parsed.ip_address, args_parsed.request_confirmation)
     elif 'power-on'== args_parsed.requested_action:
-        power_on(args_parsed.ip_address, args_parsed.request_confirmation)
+        power_action(args_parsed.ip_address, 'on', args_parsed.request_confirmation)
     elif 'power-off' == args_parsed.requested_action:
-        power_off(args_parsed.ip_address, args_parsed.request_confirmation)
+        power_action(args_parsed.ip_address, 'lona', args_parsed.request_confirmation)
     elif 'play-next' == args_parsed.requested_action:
         play_action(args_parsed.ip_address, 'next')
     elif 'play-previous' == args_parsed.requested_action:
