@@ -73,6 +73,14 @@ def power_off(ip_address, request_confirmation=False):
         display_power_status(ip_address)
 
 
+def play_action(ip_address, action):
+    requests.get('http://{ip}:15081/nowplaying?cmd={action}'.format(ip=ip_address, action=action))
+
+
+def select_input(ip_address, input_identifier):
+    requests.get('http://{ip}:15081/inputs/{input}?cmd=select'.format(ip=ip_address, input=input_identifier))
+
+
 def check_ip_address(value):
     if sys.version_info >= (3, 3):
         import ipaddress
@@ -104,7 +112,8 @@ def parse_args(args):
 
     parser.add_argument('requested_action', action="store",
                         choices=['volume-up', 'volume-down', 'mute-toggle', 'power-on', 'power-off',
-                                 # 'play-next', 'play-previous'
+                                 'play-next', 'play-previous', 'play-pause', 'input-analog-1', 'input-digital-1',
+                                 'input-digital-2', 'input-digital-3', 'input-bluetooth', 'input-webradio'
                                  ],
                         help="simulate action on remote control")
     parser.add_argument('-d', dest='request_confirmation', action="store_true")
@@ -123,6 +132,24 @@ def main(args):
         power_on(args_parsed.ip_address, args_parsed.request_confirmation)
     elif 'power-off' == args_parsed.requested_action:
         power_off(args_parsed.ip_address, args_parsed.request_confirmation)
+    elif 'play-next' == args_parsed.requested_action:
+        play_action(args_parsed.ip_address, 'next')
+    elif 'play-previous' == args_parsed.requested_action:
+        play_action(args_parsed.ip_address, 'prev')
+    elif 'play-pause' == args_parsed.requested_action:
+        play_action(args_parsed.ip_address, 'playpause')
+    elif 'input-analog-1' == args_parsed.requested_action:
+        select_input(args_parsed.ip_address, 'ana1')
+    elif 'input-digital-1' == args_parsed.requested_action:
+        select_input(args_parsed.ip_address, 'dig1')
+    elif 'input-digital-2' == args_parsed.requested_action:
+        select_input(args_parsed.ip_address, 'dig2')
+    elif 'input-digital-3' == args_parsed.requested_action:
+        select_input(args_parsed.ip_address, 'dig3')
+    elif 'input-bluetooth' == args_parsed.requested_action:
+        select_input(args_parsed.ip_address, 'bluetooth')
+    elif 'input-webradio' == args_parsed.requested_action:
+        select_input(args_parsed.ip_address, 'radio')
 
 
 if __name__ == '__main__':
