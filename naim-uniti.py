@@ -111,7 +111,6 @@ def parse_args(args):
 
 def main(args):
     args_parsed = parse_args(args)
-    print((args_parsed.volume_increment or 1) + 2)
     if 'volume-up' == args_parsed.requested_action:
         increment = args_parsed.volume_increment or 1
         volume_change(args_parsed.ip_address, increment, args_parsed.request_confirmation)
