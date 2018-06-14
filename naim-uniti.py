@@ -13,7 +13,7 @@ def get_current_value(url_pattern, ip_address, variable):
         content = r.content
         if type(content) == bytes:
             content = content.decode()
-        j = json.loads(r.content)
+        j = json.loads(content)
         if variable in j:
             return j[variable]
 
