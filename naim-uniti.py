@@ -54,6 +54,11 @@ def display_power_status(ip_address):
 
 
 def power_action(ip_address, action, request_confirmation=False):
+    if action == 'toggle':
+        if get_power_state(ip_address):
+            action = 'lona'
+        else:
+            action = 'on'	
     requests.put('http://{ip}:15081/power?system={action}'.format(ip=ip_address, action=action))
     if request_confirmation:
         display_power_status(ip_address)
@@ -97,7 +102,7 @@ def parse_args(args):
                                 type=check_ip_address)
 
     parser.add_argument('requested_action', action="store",
-                        choices=['volume-up', 'volume-down', 'mute-toggle', 'power-on', 'power-off',
+                        choices=['volume-up', 'volume-down', 'mute-toggle', 'power-on', 'power-off', 'power-toggle',
                                  'play-next', 'play-previous', 'play-pause', 'input-analog-1', 'input-digital-1',
                                  'input-digital-2', 'input-digital-3', 'input-bluetooth', 'input-webradio'
                                  ],
@@ -123,6 +128,8 @@ def main(args):
         power_action(args_parsed.ip_address, 'on', args_parsed.request_confirmation)
     elif 'power-off' == args_parsed.requested_action:
         power_action(args_parsed.ip_address, 'lona', args_parsed.request_confirmation)
+    elif 'power-toggle' == args_parsed.requested_action:
+        power_action(args_parsed.ip_address, 'toggle', args_parsed.request_confirmation)
     elif 'play-next' == args_parsed.requested_action:
         play_action(args_parsed.ip_address, 'next')
     elif 'play-previous' == args_parsed.requested_action:
