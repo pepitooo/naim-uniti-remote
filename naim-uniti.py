@@ -10,6 +10,9 @@ import requests
 def get_current_value(url_pattern, ip_address, variable):
     r = requests.get(url_pattern.format(ip=ip_address))
     if r.status_code == 200:
+        content = r.content
+        if type(content) == bytes:
+            content = content.decode()
         j = json.loads(r.content)
         if variable in j:
             return j[variable]
