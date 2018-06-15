@@ -1,78 +1,8 @@
 #!/usr/bin/env python
 
 import argparse
-import json
 import sys
-
-import requests
-
-
-def get_current_value(url_pattern, ip_address, variable):
-    r = requests.get(url_pattern.format(ip=ip_address))
-    if r.status_code == 200:
-        content = r.content
-        if type(content) == bytes:
-            content = content.decode()
-        j = json.loads(content)
-        if variable in j:
-            return j[variable]
-
-
-def volume_get_current_value(ip_address):
-    return int(get_current_value('http://{ip}:15081/levels/room', ip_address, 'volume'))
-
-
-def mute_get_current_value(ip_address):
-    return int(get_current_value('http://{ip}:15081/levels/room', ip_address, 'mute'))
-
-
-def get_power_state(ip_address):
-    current_state = get_current_value('http://{ip}:15081/power', ip_address, 'system')
-    return current_state == 'on'
-
-
-def volume_change(ip_address, increment, request_confirmation=False):
-    current_volume = volume_get_current_value(ip_address)
-    if current_volume is not None:
-        # volume will not go under 0, no big deal if you send negative value
-        requests.put('http://{ip}:15081/levels/room?volume={value}'.format(ip=ip_address, value=current_volume+increment))
-        if request_confirmation:
-            print('Volume have been set to {value}'.format(value=volume_get_current_value(ip_address)))
-
-
-def mute_toggle(ip_address, request_confirmation=False):
-    mute = mute_get_current_value(ip_address)
-    if mute is not None:
-        requests.put('http://{ip}:15081/levels/room?mute={value}'.format(ip=ip_address, value=int(not(mute > 0))))
-        if request_confirmation:
-            print('Mute have been set to {value}'.format(value=bool(mute_get_current_value(ip_address))))
-
-
-def display_power_status(ip_address):
-    current_state = get_power_state(ip_address)
-    if current_state:
-        print('Your Naim Uniti device is Power On')
-    else:
-        print('Your Naim Uniti device is Power Off')
-
-
-def power_action(ip_address, action, request_confirmation=False):
-    if action == 'toggle':
-        if get_power_state(ip_address):
-            action = 'lona'
-        else:
-            action = 'on'	
-    requests.put('http://{ip}:15081/power?system={action}'.format(ip=ip_address, action=action))
-    if request_confirmation:
-        display_power_status(ip_address)
-
-
-def play_action(ip_address, action):
-    requests.get('http://{ip}:15081/nowplaying?cmd={action}'.format(ip=ip_address, action=action))
-
-
-def select_input(ip_address, input_identifier):
-    requests.get('http://{ip}:15081/inputs/{input}?cmd=select'.format(ip=ip_address, input=input_identifier))
+from tasks import volume_change, mute_toggle, power_action, play_action, select_input
 
 
 def check_ip_address(value):
@@ -121,36 +51,36 @@ def main(args):
     args_parsed = parse_args(args)
     if 'volume-up' == args_parsed.requested_action:
         increment = args_parsed.volume_increment or 1
-        volume_change(args_parsed.ip_address, increment, args_parsed.request_confirmation)
+        volume_change.delay(args_parsed.ip_address, increment, args_parsed.request_confirmation)
     elif 'volume-down' == args_parsed.requested_action:
         increment = args_parsed.volume_increment or 1
-        volume_change(args_parsed.ip_address, -increment, args_parsed.request_confirmation)
+        volume_change.delay(args_parsed.ip_address, -increment, args_parsed.request_confirmation)
     elif 'mute-toggle' == args_parsed.requested_action:
         mute_toggle(args_parsed.ip_address, args_parsed.request_confirmation)
     elif 'power-on'== args_parsed.requested_action:
-        power_action(args_parsed.ip_address, 'on', args_parsed.request_confirmation)
+        power_action.delay(args_parsed.ip_address, 'on', args_parsed.request_confirmation)
     elif 'power-off' == args_parsed.requested_action:
-        power_action(args_parsed.ip_address, 'lona', args_parsed.request_confirmation)
+        power_action.delay(args_parsed.ip_address, 'lona', args_parsed.request_confirmation)
     elif 'power-toggle' == args_parsed.requested_action:
-        power_action(args_parsed.ip_address, 'toggle', args_parsed.request_confirmation)
+        power_action.delay(args_parsed.ip_address, 'toggle', args_parsed.request_confirmation)
     elif 'play-next' == args_parsed.requested_action:
-        play_action(args_parsed.ip_address, 'next')
+        play_action.delay(args_parsed.ip_address, 'next')
     elif 'play-previous' == args_parsed.requested_action:
-        play_action(args_parsed.ip_address, 'prev')
+        play_action.delay(args_parsed.ip_address, 'prev')
     elif 'play-pause' == args_parsed.requested_action:
-        play_action(args_parsed.ip_address, 'playpause')
+        play_action.delay(args_parsed.ip_address, 'playpause')
     elif 'input-analog-1' == args_parsed.requested_action:
-        select_input(args_parsed.ip_address, 'ana1')
+        select_input.delay(args_parsed.ip_address, 'ana1')
     elif 'input-digital-1' == args_parsed.requested_action:
-        select_input(args_parsed.ip_address, 'dig1')
+        select_input.delay(args_parsed.ip_address, 'dig1')
     elif 'input-digital-2' == args_parsed.requested_action:
-        select_input(args_parsed.ip_address, 'dig2')
+        select_input.delay(args_parsed.ip_address, 'dig2')
     elif 'input-digital-3' == args_parsed.requested_action:
-        select_input(args_parsed.ip_address, 'dig3')
+        select_input.delay(args_parsed.ip_address, 'dig3')
     elif 'input-bluetooth' == args_parsed.requested_action:
-        select_input(args_parsed.ip_address, 'bluetooth')
+        select_input.delay(args_parsed.ip_address, 'bluetooth')
     elif 'input-webradio' == args_parsed.requested_action:
-        select_input(args_parsed.ip_address, 'radio')
+        select_input.delay(args_parsed.ip_address, 'radio')
 
 
 if __name__ == '__main__':
