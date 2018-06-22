@@ -60,7 +60,7 @@ def power_action(ip_address, action, request_confirmation=False):
         if get_power_state(ip_address):
             action = 'lona'
         else:
-            action = 'on'	
+            action = 'on'
     requests.put('http://{ip}:15081/power?system={action}'.format(ip=ip_address, action=action))
     if request_confirmation:
         display_power_status(ip_address)
@@ -72,7 +72,6 @@ def play_action(ip_address, action):
 
 def select_input(ip_address, input_identifier):
     requests.get('http://{ip}:15081/inputs/{input}?cmd=select'.format(ip=ip_address, input=input_identifier))
->>>>>>> parent of 7935762... fix issue with old requests version
 
 
 def check_ip_address(value):
@@ -121,36 +120,36 @@ def main(args):
     args_parsed = parse_args(args)
     if 'volume-up' == args_parsed.requested_action:
         increment = args_parsed.volume_increment or 1
-        volume_change.delay(args_parsed.ip_address, increment, args_parsed.request_confirmation)
+        volume_change(args_parsed.ip_address, increment, args_parsed.request_confirmation)
     elif 'volume-down' == args_parsed.requested_action:
         increment = args_parsed.volume_increment or 1
-        volume_change.delay(args_parsed.ip_address, -increment, args_parsed.request_confirmation)
+        volume_change(args_parsed.ip_address, -increment, args_parsed.request_confirmation)
     elif 'mute-toggle' == args_parsed.requested_action:
         mute_toggle(args_parsed.ip_address, args_parsed.request_confirmation)
     elif 'power-on'== args_parsed.requested_action:
-        power_action.delay(args_parsed.ip_address, 'on', args_parsed.request_confirmation)
+        power_action(args_parsed.ip_address, 'on', args_parsed.request_confirmation)
     elif 'power-off' == args_parsed.requested_action:
-        power_action.delay(args_parsed.ip_address, 'lona', args_parsed.request_confirmation)
+        power_action(args_parsed.ip_address, 'lona', args_parsed.request_confirmation)
     elif 'power-toggle' == args_parsed.requested_action:
-        power_action.delay(args_parsed.ip_address, 'toggle', args_parsed.request_confirmation)
+        power_action(args_parsed.ip_address, 'toggle', args_parsed.request_confirmation)
     elif 'play-next' == args_parsed.requested_action:
-        play_action.delay(args_parsed.ip_address, 'next')
+        play_action(args_parsed.ip_address, 'next')
     elif 'play-previous' == args_parsed.requested_action:
-        play_action.delay(args_parsed.ip_address, 'prev')
+        play_action(args_parsed.ip_address, 'prev')
     elif 'play-pause' == args_parsed.requested_action:
-        play_action.delay(args_parsed.ip_address, 'playpause')
+        play_action(args_parsed.ip_address, 'playpause')
     elif 'input-analog-1' == args_parsed.requested_action:
-        select_input.delay(args_parsed.ip_address, 'ana1')
+        select_input(args_parsed.ip_address, 'ana1')
     elif 'input-digital-1' == args_parsed.requested_action:
-        select_input.delay(args_parsed.ip_address, 'dig1')
+        select_input(args_parsed.ip_address, 'dig1')
     elif 'input-digital-2' == args_parsed.requested_action:
-        select_input.delay(args_parsed.ip_address, 'dig2')
+        select_input(args_parsed.ip_address, 'dig2')
     elif 'input-digital-3' == args_parsed.requested_action:
-        select_input.delay(args_parsed.ip_address, 'dig3')
+        select_input(args_parsed.ip_address, 'dig3')
     elif 'input-bluetooth' == args_parsed.requested_action:
-        select_input.delay(args_parsed.ip_address, 'bluetooth')
+        select_input(args_parsed.ip_address, 'bluetooth')
     elif 'input-webradio' == args_parsed.requested_action:
-        select_input.delay(args_parsed.ip_address, 'radio')
+        select_input(args_parsed.ip_address, 'radio')
 
 
 if __name__ == '__main__':
