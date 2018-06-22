@@ -2,9 +2,6 @@
 
 import argparse
 import sys
-<<<<<<< HEAD
-from tasks import volume_change, mute_toggle, power_action, play_action, select_input
-=======
 
 import requests
 
